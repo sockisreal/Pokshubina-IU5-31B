@@ -1,25 +1,32 @@
 # используется для сортировки
 from operator import itemgetter
 
+
 class File:
     """ Файл """
+
     def __init__(self, id, name, size, cat_id):
         self.id = id
         self.name = name
         self.size = size
         self.cat_id = cat_id
 
+
 class Catalog:
     """Каталог файлов"""
+
     def __init__(self, id, cat_name):
         self.id = id
         self.cat_name = cat_name
 
+
 class CatalogFiles:
     """ Файлы каталога для реализации связи многие-ко-многим """
+
     def __init__(self, cat_id, file_id):
         self.cat_id = cat_id
         self.file_id = file_id
+
 
 # Каталоги
 catalogs = [
@@ -51,6 +58,44 @@ catalogs_files = [
     CatalogFiles(33, 5),
 ]
 
+
+def sorting_by_name(table):
+    return sorted(table, key=itemgetter(2))
+
+
+def sorting_by_sum_size(table, catalogs):
+    result_unsorted = []
+    # Перебираем все каталоги
+    for c in catalogs:
+        # Список файлов каталога
+        c_files = list(filter(lambda i: i[2] == c.cat_name, table))
+        # Если каталог не пустой
+        if len(c_files) > 0:
+            # Размеры файлов каталога
+            c_sizes = [size for _, size, _ in c_files]
+            # Суммарный размер файлов каталога
+            c_sizes_sum = sum(c_sizes)
+            result_unsorted.append((c.cat_name, c_sizes_sum))
+    # Сортировка по суммарному размеру
+    return sorted(result_unsorted, key=itemgetter(1), reverse=True)
+
+
+def output_files_of_catalogs_with_PAPKA2(table, catalogs):
+    result = {}
+    # Перебираем все каталоги
+    for c in catalogs:
+        if 'Папка 2' in c.cat_name:
+            # Список файлов каталога
+            c_files = list(filter(lambda i: i[2] == c.cat_name, table))
+            # Только название файлов
+            c_files_names = [x for x, _, _ in c_files]
+            # Добавляем результат в словарь
+            # ключ - каталог, значение - список названий
+            result[c.cat_name] = c_files_names
+    return result
+
+
+
 def main():
     """Основная функция"""
     # Соединение данных один-ко-многим
@@ -68,39 +113,14 @@ def main():
                     for cat_name, cat_id, file_id in many_to_many_temp
                     for f in files if f.id == file_id]
     print('Задание А1')
-    res_11 = sorted(one_to_many, key=itemgetter(2))
-    print(res_11)
+    print(sorting_by_name(one_to_many))
 
     print('\nЗадание А2')
-    res_12_unsorted = []
-    # Перебираем все каталоги
-    for c in catalogs:
-        # Список файлов каталога
-        c_files = list(filter(lambda i: i[2] == c.cat_name, one_to_many))
-        # Если каталог не пустой
-        if len(c_files) > 0:
-            # Размеры файлов каталога
-            c_sizes = [size for _, size, _ in c_files]
-            # Суммарный размер файлов каталога
-            c_sizes_sum = sum(c_sizes)
-            res_12_unsorted.append((c.cat_name, c_sizes_sum))
-    # Сортировка по суммарному размеру
-    res_12 = sorted(res_12_unsorted, key=itemgetter(1), reverse=True)
-    print(res_12)
+    print(sorting_by_sum_size(one_to_many, catalogs))
 
     print('\nЗадание А3')
-    res_13 = {}
-    # Перебираем все каталоги
-    for c in catalogs:
-        if 'Папка 2' in c.cat_name:
-            # Список файлов каталога
-            c_files = list(filter(lambda i: i[2] == c.cat_name, many_to_many))
-            # Только название файлов
-            c_files_names = [x for x, _, _ in c_files]
-            # Добавляем результат в словарь
-            # ключ - каталог, значение - список названий
-            res_13[c.cat_name] = c_files_names
-    print(res_13)
+    print(output_files_of_catalogs_with_PAPKA2(many_to_many, catalogs))
+
 
 if __name__ == '__main__':
     main()
